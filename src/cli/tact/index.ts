@@ -55,6 +55,7 @@ const ArgSchema = (Parser: ArgParser) => {
         .add(Parser.string("config", "c", "CONFIG"))
         .add(Parser.string("project", "p", "NAME"))
         .add(Parser.boolean("quiet", "q"))
+        .add(Parser.boolean("debug-info", "d"))
         .add(Parser.boolean("with-decompilation", undefined))
         .add(Parser.boolean("func", undefined))
         .add(Parser.boolean("check", undefined))
@@ -72,6 +73,7 @@ Flags
   -c, --config CONFIG         Specify path to config file (tact.config.json)
   -p, --project ...names      Build only the specified project name(s) from the config file
   -q, --quiet                 Suppress compiler log output
+  -d, --debug-info            Include debug information
   --with-decompilation        Full compilation followed by decompilation of produced binary code
   --func                      Output intermediate FunC code and exit
   --check                     Perform syntax and type checking, then exit
@@ -183,6 +185,7 @@ export const createSingleFileConfig = (fileName: string): Config => ({
                 },
             },
             mode: "full",
+            debugInfo: false,
         },
     ],
 });
@@ -223,6 +226,10 @@ const compile = async (
     const options: ExtraOptions = {};
     if (mode) {
         options.mode = mode;
+    }
+    const debugInfo = Args.single("debug-info");
+    if (debugInfo) {
+        options.debugInfo = debugInfo;
     }
     setConfigOptions(config, options);
 
@@ -298,7 +305,7 @@ const filterConfig = (
     };
 };
 
-type ExtraOptions = Pick<ConfigProject, "mode">;
+type ExtraOptions = Pick<ConfigProject, "mode" | "debugInfo">;
 
 const setConfigOptions = (config: Config, options: ExtraOptions): void => {
     for (const project of config.projects) {

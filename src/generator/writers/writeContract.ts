@@ -114,6 +114,8 @@ export function writeInit(
         ctx.flag("impure");
         ctx.flag("inline");
         ctx.body(() => {
+            ctx.resetCurrentMapping();
+            ctx.enableMapping();
             // Unpack parameters
             for (const a of init.params) {
                 if (!resolveFuncPrimitive(a.type, ctx)) {
@@ -151,6 +153,7 @@ export function writeInit(
                 }
             }
 
+            ctx.flushLocation();
             // Return result
             if (
                 init.ast.statements.length === 0 ||
@@ -159,6 +162,7 @@ export function writeInit(
             ) {
                 ctx.append(`return ${returns};`);
             }
+            ctx.disableMapping();
         });
     });
 
@@ -256,6 +260,8 @@ export function writeMainContract(
 ) {
     // Main field
     ctx.main(() => {
+        ctx.resetCurrentMapping();
+        ctx.enableMapping();
         // Comments
         ctx.append(`;;`);
         ctx.append(`;; Receivers of a Contract ${type.name}`);
@@ -265,7 +271,9 @@ export function writeMainContract(
         // Write receivers
         for (const r of type.receivers) {
             writeReceiver(type, r, ctx);
+            ctx.flushLocation();
         }
+        ctx.disableMapping();
 
         // Comments
         ctx.append(`;;`);

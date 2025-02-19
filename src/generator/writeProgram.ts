@@ -237,12 +237,14 @@ export async function writeProgram(
     const code = emit({
         header: header.join("\n"),
         functions: remainingFunctions,
+        mapper: wCtx.mapper,
     });
 
     return {
         entrypoint: basename + ".code.fc",
         files: [{ name: basename + ".code.fc", code }],
         abi,
+        locations: wCtx.mapper.formSourceMap(),
     };
 }
 

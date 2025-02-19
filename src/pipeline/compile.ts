@@ -9,6 +9,11 @@ export async function compile(
 ) {
     const abi = createABI(ctx, name);
     const output = await writeProgram(ctx, abi, basename);
-    const cOutput = output;
-    return { output: cOutput, ctx };
+    const cOutput = {
+        entrypoint: output.entrypoint,
+        files: output.files,
+        abi: output.abi,
+    };
+    const locations = output.locations;
+    return { output: cOutput, ctx, locations };
 }

@@ -91,6 +91,11 @@
             "type": "number",
             "default": 1,
             "description": "Set verbosity level (higher = more details), default: 1"
+          },
+          "debugInfo": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include debug information."
           }
         }
       }

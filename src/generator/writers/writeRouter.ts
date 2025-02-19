@@ -330,6 +330,7 @@ export function writeReceiver(
             for (const s of f.ast.statements) {
                 writeStatement(s, selfRes, null, ctx);
             }
+            ctx.flushLocation();
 
             if (
                 f.ast.statements.length === 0 ||
@@ -387,6 +388,7 @@ export function writeReceiver(
             for (const s of f.ast.statements) {
                 writeStatement(s, selfRes, null, ctx);
             }
+            ctx.flushLocation();
 
             if (
                 f.ast.statements.length === 0 ||
@@ -415,6 +417,7 @@ export function writeReceiver(
             for (const s of f.ast.statements) {
                 writeStatement(s, selfRes, null, ctx);
             }
+            ctx.flushLocation();
 
             if (
                 f.ast.statements.length === 0 ||
@@ -440,6 +443,7 @@ export function writeReceiver(
             for (const s of f.ast.statements) {
                 writeStatement(s, selfRes, null, ctx);
             }
+            ctx.flushLocation();
 
             if (
                 f.ast.statements.length === 0 ||
@@ -465,6 +469,7 @@ export function writeReceiver(
             for (const s of f.ast.statements) {
                 writeStatement(s, selfRes, null, ctx);
             }
+            ctx.flushLocation();
 
             if (
                 f.ast.statements.length === 0 ||
@@ -498,6 +503,7 @@ export function writeReceiver(
             for (const s of f.ast.statements) {
                 writeStatement(s, selfRes, null, ctx);
             }
+            ctx.flushLocation();
 
             if (
                 f.ast.statements.length === 0 ||

@@ -66,6 +66,8 @@ export function writeStatement(
     returns: TypeRef | null,
     ctx: WriterContext,
 ) {
+    ctx.flushLocation();
+    ctx.loadLocation(f.loc);
     switch (f.kind) {
         case "statement_return": {
             if (f.expression) {
@@ -194,6 +196,7 @@ export function writeStatement(
                     writeStatement(s, self, returns, ctx);
                 }
             });
+            ctx.flushLocation();
             ctx.append(`}`);
             return;
         }
@@ -204,6 +207,7 @@ export function writeStatement(
                     writeStatement(s, self, returns, ctx);
                 }
             });
+            ctx.flushLocation();
             ctx.append(`} until (${writeExpression(f.condition, ctx)});`);
             return;
         }
@@ -214,6 +218,7 @@ export function writeStatement(
                     writeStatement(s, self, returns, ctx);
                 }
             });
+            ctx.flushLocation();
             ctx.append(`}`);
             return;
         }
@@ -224,7 +229,7 @@ export function writeStatement(
                     writeStatement(s, self, returns, ctx);
                 }
             });
-
+            ctx.flushLocation();
             const catchBlock = f.catchBlock;
             if (catchBlock !== undefined) {
                 if (isWildcard(catchBlock.catchName)) {
@@ -242,7 +247,7 @@ export function writeStatement(
             } else {
                 ctx.append("} catch (_) { ");
             }
-
+            ctx.flushLocation();
             ctx.append(`}`);
             return;
         }
@@ -304,6 +309,7 @@ export function writeStatement(
                         for (const s of f.statements) {
                             writeStatement(s, self, returns, ctx);
                         }
+                        ctx.flushLocation();
                         ctx.append(
                             `(${key}, ${value}, ${flag}) = ${ctx.used(`__tact_dict_next_${kind}_${vKind}`)}(${path}, ${bits}, ${key}${vBits});`,
                         );
@@ -318,6 +324,7 @@ export function writeStatement(
                         for (const s of f.statements) {
                             writeStatement(s, self, returns, ctx);
                         }
+                        ctx.flushLocation();
                         ctx.append(
                             `(${key}, ${value}, ${flag}) = ${ctx.used(`__tact_dict_next_${kind}_int`)}(${path}, ${bits}, ${key}, 1);`,
                         );
@@ -332,6 +339,7 @@ export function writeStatement(
                         for (const s of f.statements) {
                             writeStatement(s, self, returns, ctx);
                         }
+                        ctx.flushLocation();
                         ctx.append(
                             `(${key}, ${value}, ${flag}) = ${ctx.used(`__tact_dict_next_${kind}_cell`)}(${path}, ${bits}, ${key});`,
                         );
@@ -346,6 +354,7 @@ export function writeStatement(
                         for (const s of f.statements) {
                             writeStatement(s, self, returns, ctx);
                         }
+                        ctx.flushLocation();
                         ctx.append(
                             `(${key}, ${value}, ${flag}) = ${ctx.used(`__tact_dict_next_${kind}_slice`)}(${path}, ${bits}, ${key});`,
                         );
@@ -364,6 +373,7 @@ export function writeStatement(
                         for (const s of f.statements) {
                             writeStatement(s, self, returns, ctx);
                         }
+                        ctx.flushLocation();
                         ctx.append(
                             `(${key}, ${value}, ${flag}) = ${ctx.used(`__tact_dict_next_${kind}_cell`)}(${path}, ${bits}, ${key});`,
                         );
@@ -397,6 +407,7 @@ export function writeStatement(
                         for (const s of f.statements) {
                             writeStatement(s, self, returns, ctx);
                         }
+                        ctx.flushLocation();
                         ctx.append(
                             `(${key}, ${value}, ${flag}) = ${ctx.used(`__tact_dict_next_slice_${vKind}`)}(${path}, 267, ${key}${vBits});`,
                         );
@@ -411,6 +422,7 @@ export function writeStatement(
                         for (const s of f.statements) {
                             writeStatement(s, self, returns, ctx);
                         }
+                        ctx.flushLocation();
                         ctx.append(
                             `(${key}, ${value}, ${flag}) = ${ctx.used(`__tact_dict_next_slice_int`)}(${path}, 267, ${key}, 1);`,
                         );
@@ -425,6 +437,7 @@ export function writeStatement(
                         for (const s of f.statements) {
                             writeStatement(s, self, returns, ctx);
                         }
+                        ctx.flushLocation();
                         ctx.append(
                             `(${key}, ${value}, ${flag}) = ${ctx.used(`__tact_dict_next_slice_cell`)}(${path}, 267, ${key});`,
                         );
@@ -439,6 +452,7 @@ export function writeStatement(
                         for (const s of f.statements) {
                             writeStatement(s, self, returns, ctx);
                         }
+                        ctx.flushLocation();
                         ctx.append(
                             `(${key}, ${value}, ${flag}) = ${ctx.used(`__tact_dict_next_slice_slice`)}(${path}, 267, ${key});`,
                         );
@@ -457,6 +471,7 @@ export function writeStatement(
                         for (const s of f.statements) {
                             writeStatement(s, self, returns, ctx);
                         }
+                        ctx.flushLocation();
                         ctx.append(
                             `(${key}, ${value}, ${flag}) = ${ctx.used(`__tact_dict_next_slice_cell`)}(${path}, 267, ${key});`,
                         );
@@ -512,6 +527,7 @@ function writeCondition(
         for (const s of f.trueStatements) {
             writeStatement(s, self, returns, ctx);
         }
+        ctx.flushLocation();
     });
     if (f.falseStatements && f.falseStatements.length > 0) {
         ctx.append(`} else {`);
@@ -520,8 +536,10 @@ function writeCondition(
                 writeStatement(s, self, returns, ctx);
             }
         });
+        ctx.flushLocation();
         ctx.append(`}`);
     } else if (f.elseif) {
+        ctx.loadLocation(f.elseif.loc);
         writeCondition(f.elseif, self, true, returns, ctx);
     } else {
         ctx.append(`}`);
@@ -624,6 +642,8 @@ export function writeFunction(f: FunctionDescription, ctx: WriterContext) {
                     ctx.context("stdlib");
                 }
                 ctx.body(() => {
+                    ctx.resetCurrentMapping();
+                    ctx.enableMapping();
                     // Unpack self
                     if (self && !isSelfOpt) {
                         ctx.append(
@@ -643,10 +663,12 @@ export function writeFunction(f: FunctionDescription, ctx: WriterContext) {
                         }
                     }
 
+                    ctx.flushLocation();
                     // Process statements
                     for (const s of fAst.statements) {
                         writeStatement(s, returnsStr, f.returns, ctx);
                     }
+                    ctx.flushLocation();
 
                     // Auto append return
                     if (f.self && f.returns.kind === "void" && f.isMutating) {
@@ -658,6 +680,7 @@ export function writeFunction(f: FunctionDescription, ctx: WriterContext) {
                             ctx.append(`return (${returnsStr}, ());`);
                         }
                     }
+                    ctx.disableMapping();
                 });
             });
 

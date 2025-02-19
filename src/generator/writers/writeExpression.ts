@@ -72,6 +72,7 @@ function writeStructConstructor(
         ctx.signature(sig);
         ctx.flag("inline");
         ctx.context("type:" + type.name);
+        ctx.disableMapping();
         ctx.body(() => {
             // Create expressions
             const expressions = type.fields.map((v) => {
@@ -93,6 +94,7 @@ function writeStructConstructor(
                 ctx.append(`return (${expressions.join(", ")});`);
             }
         });
+        ctx.enableMapping();
     });
     return name;
 }

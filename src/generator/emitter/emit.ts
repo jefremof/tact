@@ -2,16 +2,19 @@ import { Maybe } from "@ton/core/dist/utils/maybe";
 import { trimIndent } from "../../utils/text";
 import { WrittenFunction } from "../Writer";
 import { createPadded } from "./createPadded";
+import { Mapper } from "../Mapper";
 
 export function emit(args: {
     header?: Maybe<string>;
     functions?: Maybe<WrittenFunction[]>;
+    mapper?: Maybe<Mapper>;
 }) {
     // Emit header
     let res = "";
     if (args.header) {
         res = trimIndent(args.header);
     }
+    let currentLine: number = res.split("\n").length;
 
     // Emit functions
     if (args.functions) {
@@ -21,10 +24,12 @@ export function emit(args: {
             } else {
                 if (res !== "") {
                     res += "\n\n";
+                    currentLine += 2;
                 }
                 if (f.comment) {
                     for (const s of f.comment.split("\n")) {
                         res += `;; ${s}\n`;
+                        currentLine++;
                     }
                 }
                 if (f.code.kind === "generic") {
@@ -38,6 +43,13 @@ export function emit(args: {
                         sig = `${sig} inline_ref`;
                     }
 
+                    currentLine++;
+                    if (args.mapper) {
+                        args.mapper.resolveRelativePosition(
+                            f.name,
+                            currentLine,
+                        );
+                    }
                     res += `${sig} {\n${createPadded(f.code.code)}\n}`;
                 } else if (f.code.kind === "asm") {
                     let sig = f.signature;
@@ -45,9 +57,11 @@ export function emit(args: {
                         sig = `${sig} impure`;
                     }
                     res += `${sig} asm${f.code.shuffle} """\n    ${f.code.code}\n""";`;
+                    currentLine += 1;
                 } else {
                     throw new Error(`Unknown function body kind`);
                 }
+                currentLine += f.code.code.split("\n").length;
             }
         }
 
@@ -59,6 +73,10 @@ export function emit(args: {
             }
             if (res !== "") {
                 res += "\n\n";
+                currentLine += 2;
+            }
+            if (args.mapper) {
+                args.mapper.resolveRelativePosition("$main", currentLine);
             }
             res += m.code.code;
         }

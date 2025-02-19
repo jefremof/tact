@@ -3,6 +3,8 @@ import { escapeUnicodeControlCodes, trimIndent } from "../utils/text";
 import { topologicalSort } from "../utils/utils";
 import { Writer } from "../utils/Writer";
 import { TactInternalCompilerError } from "../error/errors";
+import { SrcInfo } from "../grammar/src-info";
+import { Mapper } from "./Mapper";
 
 type Flag = "inline" | "impure" | "inline_ref";
 
@@ -46,6 +48,42 @@ export class WriterContext {
     #nextId = 0;
     // #headers: string[] = [];
     #rendered: Set<string> = new Set();
+    #pendingLocation: SrcInfo | null = null;
+    #pendingStart: number = 0;
+    #pendingEnd: number = 0;
+    #mappingEnabled: boolean = false;
+    #mapper: Mapper = new Mapper();
+
+    flushLocation() {
+        if (this.#pendingLocation && this.#pendingLocation.file) {
+            const { lineNum, colNum } =
+                this.#pendingLocation.interval.getLineAndColumn();
+            const entry = {
+                loc: {
+                    file: this.#pendingLocation.file,
+                    line: lineNum,
+                    col: colNum,
+                },
+                start: this.#pendingStart,
+                end: this.#pendingEnd - 1,
+            };
+            this.#mapper.addEntry(this.#pendingName ?? "", entry);
+        }
+        this.#pendingLocation = null;
+        this.#pendingStart = this.#pendingEnd;
+    }
+
+    loadLocation(loc: SrcInfo) {
+        if (this.#pendingWriter && loc.origin === "user") {
+            this.#pendingLocation = loc;
+        }
+    }
+
+    resetCurrentMapping() {
+        this.#pendingLocation = null;
+        this.#pendingStart = 0;
+        this.#pendingEnd = 0;
+    }
 
     constructor(ctx: CompilerContext, name: string) {
         this.ctx = ctx;
@@ -54,6 +92,18 @@ export class WriterContext {
 
     get name() {
         return this.#name;
+    }
+
+    get mapper() {
+        return this.#mapper;
+    }
+
+    enableMapping() {
+        this.#mappingEnabled = true;
+    }
+
+    disableMapping() {
+        this.#mappingEnabled = false;
     }
 
     clone() {
@@ -299,6 +349,9 @@ export class WriterContext {
 
     append(src: string = "") {
         this.#pendingWriter!.append(src);
+        if (this.#mappingEnabled) {
+            this.#pendingEnd++;
+        }
     }
 
     write(src: string = "") {

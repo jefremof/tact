@@ -109,6 +109,11 @@ export const projectSchema = z
          * Set verbosity level (higher = more details), default: 1
          */
         verbose: z.number().optional(),
+
+        /**
+         * Include debug information
+         */
+        debugInfo: z.boolean().optional(),
     })
     .strict();
 

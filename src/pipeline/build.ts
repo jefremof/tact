@@ -23,6 +23,7 @@ import { getAstFactory, FactoryAst, idText } from "../ast/ast-helpers";
 import { TactError, TactErrorCollection } from "../error/errors";
 import { getParser, Parser } from "../grammar";
 import { defaultParser } from "../grammar/grammar";
+import { SourceMapSchema } from "../generator/Mapper";
 
 export function enableFeatures(
     ctx: CompilerContext,
@@ -150,6 +151,16 @@ export async function build(args: {
             for (const files of res.output.files) {
                 const ffc = project.resolve(config.output, files.name);
                 project.writeFile(ffc, files.code);
+            }
+            if (config.debugInfo) {
+                const sourceMap = project.resolve(
+                    config.output,
+                    config.name + "_" + contract + ".sourceMap.json",
+                );
+                project.writeFile(
+                    sourceMap,
+                    JSON.stringify(SourceMapSchema.parse(res.locations)),
+                );
             }
             project.writeFile(pathAbi, res.output.abi);
             abi = res.output.abi;
