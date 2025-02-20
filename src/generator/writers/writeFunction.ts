@@ -503,6 +503,7 @@ export function writeStatement(
             return;
         }
         case "statement_block": {
+            ctx.skipCurrentLocation();
             for (const s of f.statements) {
                 writeStatement(s, self, returns, ctx);
             }

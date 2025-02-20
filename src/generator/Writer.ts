@@ -85,6 +85,11 @@ export class WriterContext {
         this.#pendingEnd = 0;
     }
 
+    skipCurrentLocation() {
+        this.#pendingLocation = null;
+        this.flushLocation();
+    }
+
     constructor(ctx: CompilerContext, name: string) {
         this.ctx = ctx;
         this.#name = name;
