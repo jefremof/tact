@@ -62,7 +62,7 @@ export class WriterContext {
                 loc: {
                     file: this.#pendingLocation.file,
                     line: lineNum,
-                    col: colNum,
+                    pos: colNum,
                 },
                 start: this.#pendingStart,
                 end: this.#pendingEnd - 1,

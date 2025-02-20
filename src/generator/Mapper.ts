@@ -4,7 +4,7 @@ const SourceMapEntrySchema = z.object({
     loc: z.object({
         file: z.string(),
         line: z.number(),
-        col: z.number(),
+        pos: z.number(),
     }),
     start: z.number(),
     end: z.number(),
@@ -61,7 +61,7 @@ export class Mapper {
                 return a.loc.line - b.loc.line;
             }
 
-            return a.loc.col - b.loc.col;
+            return a.loc.pos - b.loc.pos;
         });
     }
 
