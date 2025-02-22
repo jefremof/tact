@@ -42,6 +42,7 @@ export type FuncCompilationResult =
           log: string;
           fift: string;
           output: Buffer;
+          debugInfo?: string;
       };
 
 type CompileResult =
@@ -54,18 +55,21 @@ type CompileResult =
           codeBoc: string;
           fiftCode: string;
           warnings: string;
+          debugInfo?: string;
       };
 
 export async function funcCompile(args: {
     entries: string[];
     sources: { path: string; content: string }[];
     logger: ILogger;
+    debugInfo?: boolean;
 }): Promise<FuncCompilationResult> {
     // Parameters
     const files: string[] = args.entries;
     const configStr = JSON.stringify({
         sources: files,
         optLevel: 2, // compileConfig.optLevel || 2
+        debugInfo: args.debugInfo ?? false,
     });
 
     // Pointer tracking
@@ -176,6 +180,7 @@ export async function funcCompile(args: {
                               : "",
                     fift: cutFirstLine(result.fiftCode.replaceAll("\\n", "\n")),
                     output: Buffer.from(result.codeBoc, "base64"),
+                    debugInfo: JSON.stringify(result.debugInfo, null, 2), // fix in funcfiftlib.cpp
                 };
             }
         }

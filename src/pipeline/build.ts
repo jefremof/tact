@@ -218,6 +218,7 @@ export async function build(args: {
                     ...codeFc,
                 ],
                 logger,
+                debugInfo: config.debugInfo,
             });
             if (!c.ok) {
                 const match = c.log.match(
@@ -237,6 +238,13 @@ export async function build(args: {
             }
             project.writeFile(pathCodeFif, c.fift);
             project.writeFile(pathCodeBoc, c.output);
+            if (config.debugInfo && c.debugInfo) {
+                const funcSourceMap = project.resolve(
+                    config.output,
+                    config.name + "_" + contract + ".fc.sourceMap.json",
+                );
+                project.writeFile(funcSourceMap, c.debugInfo);
+            }
             codeBoc = c.output;
         } catch (e) {
             logger.error("FunC compiler crashed");
